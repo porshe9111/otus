@@ -10,8 +10,9 @@ sudo -i
 cd /home/zfs/
 vi zfs.sh
 chmod +x zfs.sh
-Доступные диски
-Просмотр доступных дисковых устройств:
+
+## Доступные диски ##
+### Просмотр доступных дисковых устройств: ###
 
 text
 NAME                      MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS

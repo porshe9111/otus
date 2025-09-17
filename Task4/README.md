@@ -59,6 +59,9 @@ wget -O otus_task2.file "https://drive.usercontent.google.com/download?id=1wgxji
 zfs receive otus/test@today < otus_task2.file
 
 # Поиск и чтение секретного сообщения
-find /otus/test -name "secret_message" -exec cat {} \;
+find /otus/test -name "secret_message"
+/otus/test/task1/file_mess/secret_message
+cat /otus/test/task1/file_mess/secret_message
+https://otus.ru/lessons/linux-hl
 
 EOF

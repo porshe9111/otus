@@ -2,10 +2,10 @@
 lsblk
 
 # Создание ZFS пулов в режиме RAID 1
-zpool create otus1 mirror /dev/sdb /dev/sdc.
-zpool create otus2 mirror /dev/sdd /dev/sde
-zpool create otus3 mirror /dev/sdf /dev/sdg
-zpool create otus4 mirror /dev/sdh /dev/sdi
+zpool create otus1 mirror /dev/sdb /dev/sdc  
+zpool create otus2 mirror /dev/sdd /dev/sde  
+zpool create otus3 mirror /dev/sdf /dev/sdg  
+zpool create otus4 mirror /dev/sdh /dev/sdi  
 
 # Проверка создания пулов
 zpool list

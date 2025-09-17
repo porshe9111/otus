@@ -63,5 +63,3 @@ find /otus/test -name "secret_message"
 /otus/test/task1/file_mess/secret_message
 cat /otus/test/task1/file_mess/secret_message
 https://otus.ru/lessons/linux-hl
-
-EOF

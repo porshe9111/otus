@@ -1,135 +1,124 @@
-скрипт для настройки NFS-сервера на Ubuntu 24.04:
 
-bash
-#!/bin/bash
+# Скрипт настройки NFS-сервера для Ubuntu 24.04  
+# Требует запуска с правами root  
 
-# Скрипт настройки NFS-сервера для Ubuntu 24.04
-# Требует запуска с правами root
+set -e  # Завершать скрипт при любой ошибке  
 
-set -e  # Завершать скрипт при любой ошибке
+# Проверка прав root  
+if [ "$EUID" -ne 0 ]; then  
+    echo "Ошибка: Скрипт должен быть запущен с правами root"  
+    echo "Используйте: sudo $0"  
+    exit 1  
+fi  
 
-# Проверка прав root
-if [ "$EUID" -ne 0 ]; then
-    echo "Ошибка: Скрипт должен быть запущен с правами root"
-    echo "Используйте: sudo $0"
-    exit 1
-fi
+echo "=== Настройка NFS-сервера ==="  
 
-echo "=== Настройка NFS-сервера ==="
+# Установка NFS-сервера  
+echo "Устанавливаем NFS-сервер..."  
+apt update  
+apt install -y nfs-kernel-server  
 
-# Установка NFS-сервера
-echo "Устанавливаем NFS-сервер..."
-apt update
-apt install -y nfs-kernel-server
+echo "Проверяем сетевые порты..."  
+ss -tnplu | grep -E '(2049|111)'  
 
-echo "Проверяем сетевые порты..."
-ss -tnplu | grep -E '(2049|111)'
+# Создание и настройка директории  
+echo "Создаем директорию для экспорта..."  
+mkdir -p /srv/share/upload  
+chown -R nobody:nogroup /srv/share  
+chmod 0777 /srv/share/upload  
 
-# Создание и настройка директории
-echo "Создаем директорию для экспорта..."
-mkdir -p /srv/share/upload
-chown -R nobody:nogroup /srv/share
-chmod 0777 /srv/share/upload
+# Настройка экспорта  
+echo "Настраиваем экспорт директории..."  
+cat > /etc/exports << EOF  
+/srv/share 192.168.50.11/32(rw,sync,root_squash)  
+EOF  
 
-# Настройка экспорта
-echo "Настраиваем экспорт директории..."
-cat > /etc/exports << EOF
-/srv/share 192.168.50.11/32(rw,sync,root_squash)
-EOF
+# Применение настроек  
+echo "Применяем настройки экспорта..."  
+exportfs -r  
 
-# Применение настроек
-echo "Применяем настройки экспорта..."
-exportfs -r
+# Проверка настроек  
+echo "Проверяем экспортированные директории..."  
+exportfs -s  
 
-# Проверка настроек
-echo "Проверяем экспортированные директории..."
-exportfs -s
+echo "Перезапускаем службы NFS..."  
+systemctl restart nfs-server  
+systemctl enable nfs-server  
 
-echo "Перезапускаем службы NFS..."
-systemctl restart nfs-server
-systemctl enable nfs-server
+echo "Проверяем статус служб..."  
+systemctl status nfs-server --no-pager -l  
 
-echo "Проверяем статус служб..."
-systemctl status nfs-server --no-pager -l
+echo "=== Настройка завершена ==="  
+echo "Проверьте экспортированные директории:"  
+exportfs -v  
 
-echo "=== Настройка завершена ==="
-echo "Проверьте экспортированные директории:"
-exportfs -v
+# Скрипт настройки NFS-клиента для Ubuntu 24.04  
+# Требует запуска с правами root  
 
-Вот скрипт для настройки NFS-клиента на Ubuntu 24.04:
+set -e  # Завершать скрипт при любой ошибке  
 
-bash
-#!/bin/bash
+# Проверка прав root  
+if [ "$EUID" -ne 0 ]; then  
+    echo "Ошибка: Скрипт должен быть запущен с правами root"  
+    echo "Используйте: sudo $0"  
+    exit 1  
+fi  
 
-# Скрипт настройки NFS-клиента для Ubuntu 24.04
-# Требует запуска с правами root
+# Параметры конфигурации  
+NFS_SERVER="192.168.50.10"  
+SHARE_PATH="/srv/share"  
+MOUNT_POINT="/mnt"  
+NFS_OPTIONS="vers=3,noauto,x-systemd.automount"  
 
-set -e  # Завершать скрипт при любой ошибке
+echo "=== Настройка NFS-клиента ==="  
 
-# Проверка прав root
-if [ "$EUID" -ne 0 ]; then
-    echo "Ошибка: Скрипт должен быть запущен с правами root"
-    echo "Используйте: sudo $0"
-    exit 1
-fi
+# Установка NFS-клиента  
+echo "Устанавливаем nfs-common..."  
+apt update  
+apt install -y nfs-common  
 
-# Параметры конфигурации
-NFS_SERVER="192.168.50.10"
-SHARE_PATH="/srv/share"
-MOUNT_POINT="/mnt"
-NFS_OPTIONS="vers=3,noauto,x-systemd.automount"
+# Создание точки монтирования  
+echo "Создаем точку монтирования $MOUNT_POINT..."  
+mkdir -p "$MOUNT_POINT"  
 
-echo "=== Настройка NFS-клиента ==="
+# Добавление в fstab  
+echo "Добавляем запись в /etc/fstab..."  
 
-# Установка NFS-клиента
-echo "Устанавливаем nfs-common..."
-apt update
-apt install -y nfs-common
+# Проверяем, нет ли уже такой записи  
+if grep -q "$MOUNT_POINT" /etc/fstab; then  
+    echo "Запись для $MOUNT_POINT уже существует в fstab"  
+else  
+    # Добавляем запись в fstab  
+    echo "$NFS_SERVER:$SHARE_PATH $MOUNT_POINT nfs $NFS_OPTIONS 0 0" >> /etc/fstab  
+    echo "Запись добавлена в /etc/fstab"  
+fi  
 
-# Создание точки монтирования
-echo "Создаем точку монтирования $MOUNT_POINT..."
-mkdir -p "$MOUNT_POINT"
+# Применяем изменения  
+echo "Применяем изменения systemd..."  
+systemctl daemon-reload  
+systemctl restart remote-fs.target  
 
-# Добавление в fstab
-echo "Добавляем запись в /etc/fstab..."
+echo "Ждем завершения процесса..."  
+sleep 2  
 
-# Проверяем, нет ли уже такой записи
-if grep -q "$MOUNT_POINT" /etc/fstab; then
-    echo "Запись для $MOUNT_POINT уже существует в fstab"
-else
-    # Добавляем запись в fstab
-    echo "$NFS_SERVER:$SHARE_PATH $MOUNT_POINT nfs $NFS_OPTIONS 0 0" >> /etc/fstab
-    echo "Запись добавлена в /etc/fstab"
-fi
+# Проверяем монтирование  
+echo "Проверяем монтирование..."  
+if mount | grep -q "$MOUNT_POINT"; then  
+    echo "✓ NFS успешно смонтирован"  
+    mount | grep "$MOUNT_POINT"  
+else  
+    echo "⚠ NFS не смонтирован автоматически (ожидается монтирование при первом обращении)"  
+fi  
 
-# Применяем изменения
-echo "Применяем изменения systemd..."
-systemctl daemon-reload
-systemctl restart remote-fs.target
+# Тестируем доступ  
+echo "Тестируем доступ к NFS..."  
+if ls "$MOUNT_POINT" >/dev/null 2>&1; then  
+    echo "✓ Доступ к NFS-шаре успешен"  
+    echo "Содержимое шары:"  
+    ls -la "$MOUNT_POINT/"  
+else  
+    echo "Не удалось получить доступ к NFS-шаре"  
+    echo "Проверьте подключение к серверу $NFS_SERVER"  
+fi  
 
-echo "Ждем завершения процесса..."
-sleep 2
-
-# Проверяем монтирование
-echo "Проверяем монтирование..."
-if mount | grep -q "$MOUNT_POINT"; then
-    echo "✓ NFS успешно смонтирован"
-    mount | grep "$MOUNT_POINT"
-else
-    echo "⚠ NFS не смонтирован автоматически (ожидается монтирование при первом обращении)"
-fi
-
-# Тестируем доступ
-echo "Тестируем доступ к NFS..."
-if ls "$MOUNT_POINT" >/dev/null 2>&1; then
-    echo "✓ Доступ к NFS-шаре успешен"
-    echo "Содержимое шары:"
-    ls -la "$MOUNT_POINT/"
-else
-    echo "⚠ Не удалось получить доступ к NFS-шаре"
-    echo "Проверьте подключение к серверу $NFS_SERVER"
-fi
-
-echo "=== Настройка завершена ==="
-
-
+echo "=== Настройка завершена ==="  

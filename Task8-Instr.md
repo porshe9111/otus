@@ -1,307 +1,292 @@
-# TASK 8 Инициализация системы. Systemd 
-
-## 1. Service для мониторинга лога
-
-### Создание конфигурационного файла
-```bash
-sudo nano /etc/default/log-monitor
-
-ini
-
-LOG_FILE=/var/log/application/error.log
-KEYWORD=CRITICAL
-CHECK_INTERVAL=30
-
-### Создание скрипта мониторинга
-
-bash
-
-sudo nano /usr/local/bin/log-monitor.sh
-
-bash
-
-#!/bin/bash
-
-# Загрузка конфигурации
-source /etc/default/log-monitor
-
-# Проверка существования файла лога
-if [[ ! -f "$LOG_FILE" ]]; then
-    echo "Log file $LOG_FILE does not exist"
-    exit 1
-fi
-
-# Основной цикл мониторинга
-while true; do
-    if grep -q "$KEYWORD" "$LOG_FILE"; then
-        echo "$(date): Keyword '$KEYWORD' found in $LOG_FILE" | systemd-cat -p warning -t log-monitor
-        # Дополнительные действия при обнаружении ключевого слова
-    fi
-    sleep $CHECK_INTERVAL
-done
-
-bash
-
-sudo chmod +x /usr/local/bin/log-monitor.sh
-
-### Создание systemd service
-
-bash
-
-sudo nano /etc/systemd/system/log-monitor.service
-
-ini
-
-[Unit]
-Description=Log Monitor Service
-After=network.target
-
-[Service]
-Type=simple
-ExecStart=/usr/local/bin/log-monitor.sh
-Restart=always
-RestartSec=10
-User=root
-
-[Install]
-WantedBy=multi-user.target
-
-### Активация сервиса
-
-bash
-
-sudo systemctl daemon-reload
-sudo systemctl enable log-monitor.service
-sudo systemctl start log-monitor.service
-
-## 2. Установка spawn-fcgi и создание unit-файла
-
-### Установка spawn-fcgi
-
-bash
-
-sudo apt update
-sudo apt install spawn-fcgi
-
-### Создание unit-файла на основе init-скрипта
-
-bash
-
-sudo nano /etc/systemd/system/spawn-fcgi.service
-
-ini
-
-[Unit]
-Description=Spawn FCGI service
-After=network.target
-
-[Service]
-Type=forking
-PIDFile=/var/run/spawn-fcgi.pid
-ExecStart=/usr/bin/spawn-fcgi -a 127.0.0.1 -p 9000 -u www-data -g www-data -f /usr/bin/php-cgi -P /var/run/spawn-fcgi.pid
-ExecStop=/bin/kill -TERM $MAINPID
-Restart=on-failure
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-
-### Альтернативный вариант с параметрами из /etc/default
-
-bash
-
-sudo nano /etc/default/spawn-fcgi
-
-ini
-
-FCGI_SOCKET=127.0.0.1:9000
-FCGI_PROGRAM=/usr/bin/php-cgi
-FCGI_USER=www-data
-FCGI_GROUP=www-data
-FCGI_EXTRA_OPTIONS="-P /var/run/spawn-fcgi.pid"
-
-### Обновленный unit-файл с использованием конфигурации
-
-ini
-
-[Unit]
-Description=Spawn FCGI service
-After=network.target
-
-[Service]
-Type=forking
-EnvironmentFile=/etc/default/spawn-fcgi
-PIDFile=/var/run/spawn-fcgi.pid
-ExecStart=/usr/bin/spawn-fcgi -a ${FCGI_SOCKET%:*} -p ${FCGI_SOCKET##*:} -u $FCGI_USER -g $FCGI_GROUP -f $FCGI_PROGRAM $FCGI_EXTRA_OPTIONS
-ExecStop=/bin/kill -TERM $MAINPID
-Restart=on-failure
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-
-### Активация сервиса
-
-bash
-
-sudo systemctl daemon-reload
-sudo systemctl enable spawn-fcgi.service
-sudo systemctl start spawn-fcgi.service
-
-## 3. Доработка unit-файла Nginx для нескольких инстансов
-
-### Создание шаблона службы
-
-bash
-
-sudo nano /etc/systemd/system/nginx@.service
-
-ini
-
-[Unit]
-Description=nginx - high performance web server (%i)
-Documentation=https://nginx.org/en/docs/
-After=network-online.target remote-fs.target nss-lookup.target
-Wants=network-online.target
-
-[Service]
-Type=forking
-PIDFile=/var/run/nginx-%i.pid
-ExecStartPre=/usr/sbin/nginx -t -c /etc/nginx/nginx-%i.conf
-ExecStart=/usr/sbin/nginx -c /etc/nginx/nginx-%i.conf
-ExecReload=/bin/kill -s HUP $MAINPID
-ExecStop=/bin/kill -s TERM $MAINPID
-
-[Install]
-WantedBy=multi-user.target
-
-### Создание конфигурационных файлов для разных инстансов
-
-bash
-
-# Первый инстанс
-sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx-1.conf
-sudo sed -i 's|/var/run/nginx.pid|/var/run/nginx-1.pid|' /etc/nginx/nginx-1.conf
-
-# Второй инстанс
-sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx-2.conf
-sudo sed -i 's|/var/run/nginx.pid|/var/run/nginx-2.pid|' /etc/nginx/nginx-2.conf
-sudo sed -i 's|listen 80|listen 8080|' /etc/nginx/nginx-2.conf
-
-### Запуск нескольких инстансов
-
-bash
-
-sudo systemctl daemon-reload
-sudo systemctl enable nginx@1.service
-sudo systemctl enable nginx@2.service
-sudo systemctl start nginx@1.service
-sudo systemctl start nginx@2.service
-
-### Проверка статуса
-
-bash
-
-sudo systemctl status nginx@1.service
-sudo systemctl status nginx@2.service
-
-### Альтернативный вариант с помощью instantiated services
-
-bash
-
-sudo mkdir -p /etc/systemd/system/nginx.service.d
-sudo nano /etc/systemd/system/nginx.service.d/override.conf
-
-ini
-
-[Unit]
-Description=nginx - multiple instances
-After=network-online.target
-
-[Service]
-Type=oneshot
-RemainAfterExit=yes
-ExecStartPre=/usr/sbin/nginx -t -c /etc/nginx/nginx-1.conf
-ExecStartPre=/usr/sbin/nginx -t -c /etc/nginx/nginx-2.conf
-ExecStart=/usr/sbin/nginx -c /etc/nginx/nginx-1.conf
-ExecStartPost=/bin/sleep 2
-ExecStartPost=/usr/sbin/nginx -c /etc/nginx/nginx-2.conf
-
-ExecReload=/bin/kill -s HUP $(cat /var/run/nginx-1.pid)
-ExecReload=/bin/kill -s HUP $(cat /var/run/nginx-2.pid)
-
-ExecStop=/bin/kill -s TERM $(cat /var/run/nginx-1.pid)
-ExecStop=/bin/kill -s TERM $(cat /var/run/nginx-2.pid)
-
-### Пример Ansible плейбука для автоматизации
-
-yaml
-
----
-- name: Configure Ubuntu 24.04 services
-  hosts: all
-  become: yes
-  tasks:
-    - name: Install required packages
-      apt:
-        name:
-          - spawn-fcgi
-          - nginx
-        state: present
-        update_cache: yes
-
-    - name: Create log monitor configuration
-      copy:
-        content: | LOG_FILE=/var/log/application/error.log
-          KEYWORD=CRITICAL
-          CHECK_INTERVAL=30
-        dest: /etc/default/log-monitor
-        owner: root
-        group: root
-        mode: 0644
-
-    - name: Deploy log monitor script
-      copy:
-        src: files/log-monitor.sh
-        dest: /usr/local/bin/log-monitor.sh
-        owner: root
-        group: root
-        mode: 0755
-
-    - name: Deploy log monitor service
-      copy:
-        src: files/log-monitor.service
-        dest: /etc/systemd/system/log-monitor.service
-        owner: root
-        group: root
-        mode: 0644
-
-    - name: Deploy spawn-fcgi service
-      copy:
-        src: files/spawn-fcgi.service
-        dest: /etc/systemd/system/spawn-fcgi.service
-        owner: root
-        group: root
-        mode: 0644
-
-    - name: Deploy nginx template service
-      copy:
-        src: files/nginx@.service
-        dest: /etc/systemd/system/nginx@.service
-        owner: root
-        group: root
-        mode: 0644
-
-    - name: Reload systemd
-      systemd:
-        daemon_reload: yes
-
-    - name: Enable and start services
-      systemd:
-        name: "{{ item }}"
-        enabled: yes
-        state: started
-      loop:
-        - log-monitor
-        - spawn-fcgi
-        - nginx@1
+# TASK 8 Инициализация системы. Systemd   
+  
+# Автоматизация настройки системы мониторинга логов, установку spawn-fcgi и конфигурацию Nginx для запуска нескольких инстансов на Ubuntu.    
+  
+Ansible плейбук setup-services.yml  
+yaml  
+---  
+- name: Настройка системы мониторинга и сервисов  
+  hosts: all  
+  become: yes  
+  vars:  
+    monitor_keyword: "ERROR"  
+    monitor_logfile: "/var/log/syslog"  
+    nginx_instances:  
+      - name: nginx-main  
+        config: "/etc/nginx/nginx.conf"  
+        port: 80  
+      - name: nginx-alt  
+        config: "/etc/nginx/nginx-alt.conf"  
+        port: 8080  
+  
+  tasks:  
+    - name: Обновление списка пакетов  
+      apt:  
+        update_cache: yes  
+  
+    - name: Установка необходимых пакетов  
+      apt:  
+        name:  
+          - spawn-fcgi  
+          - nginx  
+          - python3  
+          - python3-pip  
+        state: present  
+  
+    - name: Создание директории для конфигурации мониторинга  
+      file:  
+        path: /etc/default  
+        state: directory  
+        mode: 0755  
+  
+    - name: Создание конфигурационного файла для мониторинга  
+      copy:  
+        content: |  
+          # Конфигурация мониторинга логов  
+          KEYWORD="{{ monitor_keyword }}"  
+          LOGFILE="{{ monitor_logfile }}"  
+          INTERVAL=30  
+        dest: /etc/default/log-monitor  
+        mode: 0644  
+  
+    - name: Создание скрипта мониторинга  
+      copy:  
+        content: |  
+          #!/bin/bash  
+          # Скрипт мониторинга логов  
+          source /etc/default/log-monitor  
+  
+          if [[ -z "  KEYWORD" || -z "  LOGFILE" ]]; then  
+              echo "Ошибка: KEYWORD или LOGFILE не установлены в /etc/default/log-monitor"  
+              exit 1  
+          fi  
+  
+          if [[ ! -f "  LOGFILE" ]]; then  
+              echo "Ошибка: Файл лога   LOGFILE не существует"  
+              exit 1  
+          fi  
+  
+          while true; do  
+              if tail -n 50 "  LOGFILE" | grep -q "  KEYWORD"; then  
+                  echo "  (date): Обнаружено ключевое слово '  KEYWORD' в   LOGFILE" >> /var/log/monitor-service.log  
+              fi  
+              sleep   INTERVAL  
+          done  
+        dest: /usr/local/bin/monitor-log.sh  
+        mode: 0755  
+  
+    - name: Создание systemd service для мониторинга  
+      copy:  
+        content: |  
+          [Unit]  
+          Description=Log Monitor Service  
+          After=network.target  
+  
+          [Service]  
+          Type=simple  
+          ExecStart=/usr/local/bin/monitor-log.sh  
+          Restart=always  
+          RestartSec=10  
+          User=root  
+          EnvironmentFile=/etc/default/log-monitor  
+  
+          [Install]  
+          WantedBy=multi-user.target  
+        dest: /etc/systemd/system/monitor-log.service  
+        mode: 0644  
+  
+    - name: Создание unit-файла для spawn-fcgi  
+      copy:  
+        content: |  
+          [Unit]  
+          Description=Spawn-fcgi service  
+          After=network.target  
+  
+          [Service]  
+          Type=forking  
+          PIDFile=/var/run/spawn-fcgi.pid  
+          ExecStart=/usr/bin/spawn-fcgi -a 127.0.0.1 -p 9000 -u www-data -g www-data -f /usr/bin/php-cgi -P /var/run/spawn-fcgi.pid  
+          ExecStop=/bin/kill -15   MAINPID  
+          Restart=on-failure  
+          RestartSec=10  
+  
+          [Install]  
+          WantedBy=multi-user.target  
+        dest: /etc/systemd/system/spawn-fcgi.service  
+        mode: 0644  
+  
+    - name: Создание дополнительных конфигураций Nginx  
+      block:  
+        - name: Создание альтернативной конфигурации Nginx  
+          copy:  
+            content: |  
+              user www-data;  
+              worker_processes auto;  
+              pid /run/nginx-alt.pid;  
+  
+              events {  
+                  worker_connections 768;  
+              }  
+  
+              http {  
+                  sendfile on;  
+                  tcp_nopush on;  
+                  tcp_nodelay on;  
+                  keepalive_timeout 65;  
+                  types_hash_max_size 2048;  
+  
+                  include /etc/nginx/mime.types;  
+                  default_type application/octet-stream;  
+  
+                  access_log /var/log/nginx/alt-access.log;  
+                  error_log /var/log/nginx/alt-error.log;  
+  
+                  server {  
+                      listen 8080;  
+                      listen [::]:8080;  
+  
+                      root /var/www/html;  
+                      index index.html index.htm;  
+  
+                      location / {  
+                          try_files   uri   uri/ =404;  
+                      }  
+                  }  
+              }  
+            dest: "{{ item.config }}"  
+          loop: "{{ nginx_instances }}"  
+          when: item.name == "nginx-alt"  
+  
+    - name: Создание systemd служб для каждого инстанса Nginx  
+      copy:  
+        content: |  
+          [Unit]  
+          Description=nginx - high performance web server for {{ item.name }}  
+          Documentation=https://nginx.org/en/docs/  
+          After=network.target  
+  
+          [Service]  
+          Type=forking  
+          PIDFile=/run/nginx-{{ item.name | replace('nginx-', '') }}.pid  
+          ExecStart=/usr/sbin/nginx -c {{ item.config }}  
+          ExecReload=/bin/kill -s HUP   MAINPID  
+          ExecStop=/bin/kill -s TERM   MAINPID  
+          Restart=on-failure  
+          RestartSec=10  
+  
+          [Install]  
+          WantedBy=multi-user.target  
+        dest: "/etc/systemd/system/{{ item.name }}.service"  
+      loop: "{{ nginx_instances }}"  
+  
+    - name: Перезагрузка systemd daemon  
+      systemd:  
+        daemon_reload: yes  
+  
+    - name: Запуск и включение службы мониторинга  
+      systemd:  
+        name: monitor-log  
+        state: started  
+        enabled: yes  
+  
+    - name: Запуск и включение spawn-fcgi  
+      systemd:  
+        name: spawn-fcgi  
+        state: started  
+        enabled: yes  
+  
+    - name: Запуск и включение инстансов Nginx  
+      systemd:  
+        name: "{{ item.name }}"  
+        state: started  
+        enabled: yes  
+      loop: "{{ nginx_instances }}"  
+  
+    - name: Проверка статуса служб  
+      command: systemctl status "{{ item }}"  
+      register: service_status  
+      loop:  
+        - monitor-log  
+        - spawn-fcgi  
+        - nginx-main  
+      ignore_errors: yes  
+  
+    - name: Вывод статуса служб  
+      debug:  
+        msg: "Статус {{ item.item }}: {{ item.stdout }}"  
+      loop: "{{ service_status.results }}"  
+# Файл инвентаризации inventory.ini  
+ini  
+[webservers]  
+server1 ansible_host=10.20.30.1
+  
+[webservers:vars]  
+ansible_ssh_private_key_file=~/.ssh/your-private-key  
+Использование  
+1. Подготовка окружения  
+bash  
+# Клонирование репозитория с решением  
+git clone <repository-url>  
+cd ansible-ubuntu-services  
+  
+# Настройка инвентаризации    
+cp inventory.example.ini inventory.ini  
+# Отредактировать inventory.ini
+2. Запуск Ansible плейбука  
+bash  
+# Проверка синтаксиса    
+ansible-playbook --syntax-check setup-services.yml  
+  
+# Запуск плейбука    
+ansible-playbook -i inventory.ini setup-services.yml  
+3. Проверка работы сервисов  
+bash  
+# Проверка статуса службы мониторинга    
+systemctl status monitor-log  
+  
+# Проверка статуса spawn-fcgi    
+systemctl status spawn-fcgi  
+  
+# Проверка статуса инстансов Nginx    
+systemctl status nginx-main  
+systemctl status nginx-alt  
+  
+# Просмотр логов мониторинга    
+tail -f /var/log/monitor-service.log  
+Конфигурационные файлы  
+/etc/default/log-monitor  
+bash  
+# Конфигурация мониторинга логов    
+KEYWORD="ERROR"  
+LOGFILE="/var/log/syslog"  
+INTERVAL=30  
+Мониторинг логов  
+•	Сервис: monitor-log.service  
+•	Скрипт: /usr/local/bin/monitor-log.sh  
+•	Конфигурация: /etc/default/log-monitor  
+•	Логи: /var/log/monitor-service.log  
+Spawn-fcgi  
+•	Сервис: spawn-fcgi.service  
+•	Порт: 9000  
+•	Пользователь: www-data  
+Nginx инстансы  
+•	nginx-main: порт 80, конфиг /etc/nginx/nginx.conf  
+•	nginx-alt: порт 8080, конфиг /etc/nginx/nginx-alt.conf  
+Управление сервисами  
+bash  
+# Перезапуск мониторинга    
+sudo systemctl restart monitor-log  
+  
+# Просмотр логов мониторинга    
+sudo journalctl -u monitor-log -f  
+  
+# Изменение ключевого слова для мониторинга    
+sudo nano /etc/default/log-monitor  
+sudo systemctl restart monitor-log  
+  
+# Проверка работы Nginx инстансов    
+curl http://localhost  
+curl http://localhost:8080  
+.  
+  
+  

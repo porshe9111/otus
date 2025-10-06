@@ -54,3 +54,15 @@
 `Task8-Inst.md`
 - Ansible playbook systemmd  
 `setup-services.yml`
+
+## 9 - BASH 
+Домашнее задание находится в папке `Task9`.  
+**Файлы:**  
+- bash-скрипт для формирования и отправки ежечасного отчёта о работе веб-сервера  
+`task9-script-report.sh`
+
+
+
+
+
+

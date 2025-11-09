@@ -1,4 +1,4 @@
-Vagrantfile  
+## Vagrantfile  
 Vagrant.configure("2") do |config|  
   # Используем базовый образ Ubuntu  
   config.vm.box = "ubuntu/focal64"  

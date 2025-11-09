@@ -134,4 +134,4 @@ ansible web -m shell -a "systemctl status nginx"
 ansible web -m shell -a "netstat -tlnp | grep nginx"  
 Тестируем доступность через curl  
 
-curl http://192.168.56.10:8080  
+curl http://10.20.30.40:8080  

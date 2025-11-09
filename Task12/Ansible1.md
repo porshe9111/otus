@@ -1,6 +1,6 @@
 Шаг 1: Подготовка окружения  
 Создаем рабочую директорию и файлы  
-bash  
+
 mkdir ansible-nginx && cd ansible-nginx  
 Создаем Vagrantfile  
 ruby  
@@ -16,27 +16,13 @@ Vagrant.configure("2") do |config|
   end  
 end  
 Шаг 2: Запускаем виртуальную машину  
-bash  
+
 vagrant up  
 Проверяем доступность хоста  
-bash  
+
 vagrant ssh-config  
 Шаг 3: Установка Ansible  
-bash  
-# Для Ubuntu/Debian  
-sudo apt update  
-sudo apt install -y software-properties-common  
-sudo apt-add-repository --yes --update ppa:ansible/ansible  
-sudo apt install -y ansible  
-  
-# Проверяем версию  
-ansible --version  
-Шаг 4: Настройка Ansible  
-Создаем структуру каталогов  
-bash  
-mkdir -p staging group_vars templates roles/nginx/tasks roles/nginx/handlers roles/nginx/templates  
-Создаем inventory файл  
-bash  
+
 # staging/hosts  
 [web]  
 nginx ansible_host=192.168.56.10 ansible_port=22 ansible_user=vagrant ansible_private_key_file=.vagrant/machines/nginx/virtualbox/private_key  
@@ -50,7 +36,7 @@ host_key_checking = False
 retry_files_enabled = False  
 private_key_file = .vagrant/machines/nginx/virtualbox/private_key  
 Проверяем подключение  
-bash  
+
 ansible all -m ping  
 Шаг 5: Создаем Ansible роль для nginx  
 Создаем главный playbook  
@@ -131,21 +117,21 @@ server {
 }  
 Шаг 6: Запускаем playbook  
 Проверяем синтаксис  
-bash  
+
 ansible-playbook --syntax-check nginx.yml  
 Запускаем в тестовом режиме (dry-run)  
-bash  
+
 ansible-playbook --check nginx.yml  
 Запускаем playbook  
-bash  
+
 ansible-playbook nginx.yml  
 Шаг 7: Проверяем результат  
 Проверяем статус nginx на удаленном хосте  
-bash  
+
 ansible web -m shell -a "systemctl status nginx"  
 Проверяем порт прослушивания  
-bash  
+
 ansible web -m shell -a "netstat -tlnp | grep nginx"  
 Тестируем доступность через curl  
-bash  
+
 curl http://192.168.56.10:8080  

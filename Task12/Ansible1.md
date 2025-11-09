@@ -3,12 +3,12 @@
 
 mkdir ansible-nginx && cd ansible-nginx  
 Создаем Vagrantfile  
-
+ruby  
 # Vagrantfile  
 Vagrant.configure("2") do |config|  
   config.vm.define "nginx" do |nginx|  
     nginx.vm.box = "ubuntu/focal64"  
-    nginx.vm.network "private_network", ip: "192.168.56.10"  
+    nginx.vm.network "private_network", ip: "10.20.30.40"  
     nginx.vm.provider "virtualbox" do |vb|  
       vb.memory = "1024"  
       vb.cpus = 1  
@@ -25,7 +25,7 @@ vagrant ssh-config
 
 # staging/hosts  
 [web]  
-nginx ansible_host=192.168.56.10 ansible_port=22 ansible_user=vagrant ansible_private_key_file=.vagrant/machines/nginx/virtualbox/private_key  
+nginx ansible_host=10.20.30.40 ansible_port=22 ansible_user=vagrant ansible_private_key_file=.vagrant/machines/nginx/virtualbox/private_key  
 Создаем конфигурационный файл ansible.cfg  
 ini  
 # ansible.cfg  

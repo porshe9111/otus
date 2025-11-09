@@ -3,7 +3,7 @@
 
 mkdir ansible-nginx && cd ansible-nginx  
 Создаем Vagrantfile  
-ruby  
+
 # Vagrantfile  
 Vagrant.configure("2") do |config|  
   config.vm.define "nginx" do |nginx|  

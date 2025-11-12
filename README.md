@@ -80,7 +80,14 @@
 `Ansible1.md`
 
 ## 13 - Vagrant
-
+Домашнее задание находится в папке `Task12`.  
+**Файлы:**  
+- Провижининг 
+`Vagrantfile`
+- Cкриншот команды df -h с ВМ
+`Vagrant-(df-h).JPG`
+- Cкриншот команды netstat -tulpn | grep 8080 с ВМ
+`Vagrant-(Netstat).JPG`
 
 
 

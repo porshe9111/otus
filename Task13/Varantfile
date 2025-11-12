@@ -1,0 +1,57 @@
+Vagrant.configure("2") do |config|  
+  # Используем образ Ubuntu Jammy  
+  config.vm.box = "ubuntu/jammy64"  
+    
+  # Настройка памяти ВМ  
+  config.vm.provider "virtualbox" do |vb|  
+    vb.memory = 1024  
+      
+    # Добавляем два виртуальных диска по 1 ГБ  
+    vb.customize ['createhd', '--filename', 'disk1.vdi', '--size', 1024]  
+    vb.customize ['createhd', '--filename', 'disk2.vdi', '--size', 1024]  
+    vb.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', 'disk1.vdi']  
+    vb.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 2, '--device', 0, '--type', 'hdd', '--medium', 'disk2.vdi']  
+  end  
+    
+  # Настройка проброса портов  
+  config.vm.network "forwarded_port", guest: 80, host: 8080, auto_correct: true  
+    
+  # Провижининг  
+  config.vm.provision "shell", inline: <<-SHELL  
+    # Обновление пакетов  
+    apt-get update  
+      
+    # Поиск добавленных дисков  
+    DISK1=$(lsblk -o NAME,SIZE -l | grep "1G" | head -1 | awk '{print $1}')  
+    DISK2=$(lsblk -o NAME,SIZE -l | grep "1G" | tail -1 | awk '{print $1}')  
+      
+    echo "Найден диск 1: /dev/$DISK1"  
+    echo "Найден диск 2: /dev/$DISK2"  
+      
+    # Форматирование дисков в ext4  
+    mkfs.ext4 -F /dev/$DISK1  
+    mkfs.ext4 -F /dev/$DISK2  
+      
+    # Создание точек монтирования  
+    mkdir -p /mnt/disk1  
+    mkdir -p /mnt/disk2  
+      
+    # Монтирование дисков  
+    mount /dev/$DISK1 /mnt/disk1  
+    mount /dev/$DISK2 /mnt/disk2  
+      
+    # Добавление в fstab для автоматического монтирования при загрузке  
+    echo "/dev/$DISK1 /mnt/disk1 ext4 defaults 0 0" >> /etc/fstab  
+    echo "/dev/$DISK2 /mnt/disk2 ext4 defaults 0 0" >> /etc/fstab  
+      
+    # Бонус: Установка и запуск nginx для проверки проброса портов  
+    apt-get install -y nginx  
+    systemctl start nginx  
+    systemctl enable nginx  
+      
+    # Создание тестовой страницы  
+    echo "<h1>Hello from Vagrant VM!</h1><p>Port forwarding test successful!</p>" > /var/www/html/index.html  
+      
+    echo "Провижининг завершен успешно!"  
+  SHELL  
+end  

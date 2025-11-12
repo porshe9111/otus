@@ -53,5 +53,5 @@ Vagrant.configure("2") do |config|
     echo "<h1>Hello from Vagrant VM!</h1><p>Port forwarding test successful!</p>" > /var/www/html/index.html  
       
     echo "Провижининг завершен успешно!"  
-  SHELL  
+  end 
 end  

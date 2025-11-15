@@ -89,8 +89,13 @@
 - Cкриншот команды netstat -tulpn | grep 8080 с ВМ
 `Vagrant-(Netstat).JPG`
 
-
-
+## 14 - Docker
+Домашнее задание находится в папке `Task14`.  
+**Файлы:**  
+- Пошаговое описание решения задачи 
+`Docker.MD`
+- Пример рабочего Dockerfile для приложения
+`Dockerfile.htm`
 
 
 

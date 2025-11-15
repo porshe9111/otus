@@ -153,7 +153,7 @@ b7a6ef46bd08b4bed5b3b34e4d19bda4dc9d437af8bc900a33aed56b5d51af93
 ```
 docker ps
 CONTAINER ID   IMAGE      COMMAND                  CREATED          STATUS          PORTS                                   NAMES
-b7a6ef46bd08   alpnginx   "nginx -g 'daemon of…"   47 seconds ago   Up 46 seconds   0.0.0.0:8081->80/tcp, :::8081->80/tcp   alpcontainer
+b7a6ef46bd08   alpnginx   "nginx -g 'daemon of…"   49 seconds ago   Up 48 seconds   0.0.0.0:8081->80/tcp, :::8081->80/tcp   alpcontainer
 ```
 
 Проверяем через localhost:

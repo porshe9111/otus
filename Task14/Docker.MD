@@ -8,26 +8,6 @@
 * Ответьте на вопрос: Можно ли в контейнере собрать ядро?  
 * Собранный образ необходимо запушить в docker hub и дать ссылку на ваш репозиторий.  
 
-### Полезные данные для работы:
-
-Удаление контейнеров и имеджей:
-
-```
-docker rm -vf $(docker ps -a -q)
-docker rmi -f $(docker images -a -q)
-```
-Более сложные примеры - https://www.digitalocean.com/community/tutorials/how-to-remove-docker-images-containers-and-volumes
-
-Send a KILL signal to a container
-
-```
- docker kill my_container
-```
-
-Подключиться внутрь контейнера:
-
-```
-docker exec -it alpcontainer sh
 ```
 
 Инструкции Dockerfile:

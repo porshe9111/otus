@@ -109,4 +109,13 @@
 - Решение задачи
 `Reshenie.md`
 
-
+## 17 - LOGS
+Домашнее задание находится в папке `Task17`.  
+**Файлы:**  
+- Файл для Vagrant
+`Vagrantfile`
+- Решение задачи
+`datacheck.jpg`
+`proverki.jpg`
+`sshcheck.jpg`
+`login.sh`

@@ -119,3 +119,11 @@
 `proverki.jpg`
 `sshcheck.jpg`
 `login.sh`
+
+## 18 - BACKUP
+Домашнее задание находится в папке `Task18`.  
+**Файлы:**  
+`RESHENIE`
+- Решение задачи
+`Vagrantfile.txt`
+- Vagrant

@@ -117,15 +117,6 @@ PING 192.168.2.2 (192.168.2.2) 56(84) bytes of data.
 64 bytes from 192.168.2.2: icmp_seq=2 ttl=62 time=1.35 ms
 
 ```
-### Решение(c использованием Ansible)
 
-Репозиторий дз с использованием Ansible  https://github.com/adastraaero/OTUS_LinuxProf/tree/main/Lesson26NetworkANS
-
-
-![Image 3](Server1.jpg)
-
-![Image 4](Server2.jpg)
-
-![Image 5](CentralServer.jpg)
 
 </details>

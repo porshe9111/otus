@@ -1,4 +1,4 @@
-## Lesson26Network - Архитектура сетей
+## Lesson28 Network - Архитектура сетей
 
 <details>
 

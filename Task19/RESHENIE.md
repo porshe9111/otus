@@ -14,9 +14,9 @@
 ### Решение
 
 
-![Image 1](Task19/network.jpg)
+![Image 1](network.jpg)
 
-![Image 2](Task19/network1.jpg)
+![Image 2](network1.jpg)
 
 ### Практическая часть
 
@@ -122,10 +122,10 @@ PING 192.168.2.2 (192.168.2.2) 56(84) bytes of data.
 Репозиторий дз с использованием Ansible  https://github.com/adastraaero/OTUS_LinuxProf/tree/main/Lesson26NetworkANS
 
 
-![Image 3](Task19/Server1.jpg)
+![Image 3](Server1.jpg)
 
-![Image 4](Task19/Server2.jpg)
+![Image 4](Server2.jpg)
 
-![Image 5](Task19/CentralServer.jpg)
+![Image 5](CentralServer.jpg)
 
 </details>

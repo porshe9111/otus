@@ -21,7 +21,7 @@
 
 Разворачиваем роутеры через Vagrant и Ansible и проверяем доступность сетей с разных хостов.
 
-![Image 1](Task22/r1proof.jpg)
+![Image 1](r1proof.jpg)
 
 ![Image 1](Lesson32_OSPF/screen/r2proof.jpg)
 

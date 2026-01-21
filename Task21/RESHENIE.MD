@@ -14,13 +14,6 @@
 Формат сдачи ДЗ - vagrant + ansible
 
 ### Решение:
-
-Для решения использовались статьи:
-
-https://wiki.archlinux.org/title/Port_knocking#Simple_port_knocking
-
-https://otus.ru/nest/post/267/
-
 листинг iptables  inetRouter
 ```
 *nat

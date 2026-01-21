@@ -17,15 +17,15 @@
 
 **Схема сети**
 
-![Image 1](Task22/Network_scheme.jpg)
+![Image 1](Network_scheme.jpg)
 
 Разворачиваем роутеры через Vagrant и Ansible и проверяем доступность сетей с разных хостов.
 
 ![Image 1](r1proof.jpg)
 
-![Image 1](Lesson32_OSPF/screen/r2proof.jpg)
+![Image 1](r2proof.jpg)
 
-![Image 1](Lesson32_OSPF/screen/r3proof.jpg)
+![Image 1](r3proof.jpg)
 
 ## Настройка и проверка ассиметричного роутинга
 
@@ -42,9 +42,9 @@ router1(config-if)# ip ospf cost 1000
 router1(config-if)# exit
 router1(config)# exit
 ```
-![Image 1](Lesson32_OSPF/screen/OSPF_weight1.jpg)
+![Image 1](OSPF_weight1.jpg)
 
-![Image 1](Lesson32_OSPF/screen/OSPF_weight2.jpg)
+![Image 1](OSPF_weight2.jpg)
 
 
 ## Настройка и проверка симетричного роутинга с дорогими интерфейсами
@@ -56,9 +56,9 @@ router2(config-if)# ip ospf cost 1000
 router2(config-if)# exit
 router2(config)# exit
 ```
-![Image 1](Lesson32_OSPF/screen/OSPF_sim1.jpg)
+![Image 1](OSPF_sim1.jpg)
 
-![Image 1](Lesson32_OSPF/screen/OSPF_sim2.jpg)
+![Image 1](OSPF_sim2.jpg)
 
 </details>
 

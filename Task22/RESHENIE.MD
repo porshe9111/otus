@@ -17,7 +17,7 @@
 
 **Схема сети**
 
-![Image 1](Lesson32_OSPF/screen/Network_scheme.jpg)
+![Image 1](Task22/Network_scheme.jpg)
 
 Разворачиваем роутеры через Vagrant и Ansible и проверяем доступность сетей с разных хостов.
 

@@ -154,5 +154,15 @@
 `server.conf`
 `conf.yml`
 
+## 24 - DNS
+Домашнее задание находится в папке `Task24`.
+`RESHENIE_DNS.MD`- Решение задачи
+**Файлы:**  
+- Файл для Vagrant:
+`Vagrantfile`
+- Решение задачи
+`dig1+2.jpg`  
+`sestatus.jpg`  
+`splitDNSCheck.jpg`  
 
 

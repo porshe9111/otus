@@ -1,4 +1,4 @@
-## Lesson35 SPLITDNS
+## Lesson24 SPLITDNS
 
 <details>
 

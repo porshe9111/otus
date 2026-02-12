@@ -147,5 +147,11 @@
 Домашнее задание находится в папке `Task23`.  
 **Файлы:**  
 `RESHENIE_VPN.MD`- Решение задачи
+- Файл для Vagrant
+`Vagrantfile`
+`openvpn@service`
+`server.conf`
+`conf.yml`
+
 
 

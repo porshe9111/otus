@@ -112,13 +112,13 @@
 ## 17 - LOGS
 Домашнее задание находится в папке `Task17`.  
 **Файлы:**  
-- Файл для Vagrant
+- Файл для Vagrant:
 `Vagrantfile`
 - Решение задачи
-`datacheck.jpg`
-`proverki.jpg`
-`sshcheck.jpg`
-`login.sh`
+`datacheck.jpg`  
+`proverki.jpg`  
+`sshcheck.jpg`  
+`login.sh`  
 
 ## 18 - BACKUP
 Домашнее задание находится в папке `Task18`.  

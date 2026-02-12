@@ -149,6 +149,7 @@
 `RESHENIE_VPN.MD`- Решение задачи
 - Файл для Vagrant
 `Vagrantfile`
+и  
 `openvpn@service`
 `server.conf`
 `conf.yml`

@@ -177,3 +177,15 @@
 - Файл для Vagrant:
 `Vagrantfile`
 `Topology.jpg`
+
+
+## 24 - LDAP
+Домашнее задание находится в папке `Task26`.
+`RESHENIE26.MD`- Решение задачи
+**Файлы:**  
+- Файл для Vagrant:
+`Vagrantfile`
+- Решение задачи
+`ipa1.jpg`  
+`ipa2.jpg`  
+

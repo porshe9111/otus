@@ -187,4 +187,17 @@
 `Vagrantfile`
 - Решение задачи
 `ipa1.jpg`  
-`ipa2.jpg`  
+`ipa2.jpg`
+
+## 27 - Dynamic WEB
+Домашнее задание находится в папке `Task27`.
+`RESHENIE27.MD`- Решение задачи
+
+## 28 - MYSQL B%R
+Домашнее задание находится в папке `Task26`.
+`RESHENIE28.MD`- Решение задачи
+**Файлы:**  
+- Файл для Vagrant:
+`Vagrantfile`
+`provision.yml`  
+`global_vars.yml`
